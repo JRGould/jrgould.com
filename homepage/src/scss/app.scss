@@ -1,0 +1,67 @@
+@import url("https://fonts.googleapis.com/css?family=Raleway:300,400");
+
+body {
+	--primary-color: rgba(255,200,30,.75);
+	--primary-color-light: rgba(255,200,30,.50);
+	--primary-color-lighter: rgba(255,200,30,.20);
+
+	--secondary-color: rgba(30, 255, 155, 0.75);
+	--secondary-color-light: rgba(30, 255, 155, 0.50);
+	--secondary-color-lighter: rgba(30, 255, 155, 0.20);
+
+	background: #fff;
+	min-height: 100vh;
+	margin: 0;
+
+	font-family: Raleway, Helvetica Neue, sans-serif;
+	&, *{
+		position: relative;
+		box-sizing: border-box;
+	}
+}
+
+body {
+	border-left: 15px solid var(--primary-color);
+	border-right: 15px solid var(--primary-color);
+	padding: 0;
+}
+body:before, body:after {
+	content: "";
+	position: fixed;
+	background-color: var(--primary-color);
+	left: 15px;
+	right: 15px;
+	height: 15px;
+}
+body:before {
+    top: 0;
+}
+body:after {
+    bottom: 0;
+}
+
+
+#app{
+	display: flex;
+	min-height: 99vh;
+	flex-direction: column;
+}
+
+.home{
+	position: static;
+	clear: both;
+}
+
+a{
+  background-color: var(--primary-color-lighter);
+  color: #333;
+  text-decoration: none;
+  transition: background-color .3s ease-out;
+  &:hover{
+	background-color: var(--primary-color-light);
+  }
+}
+
+p{
+	max-width: 40em;
+}
