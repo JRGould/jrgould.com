@@ -56,10 +56,10 @@ export default function Categories({ data: { site }, pageContext }) {
   );
 }
 
-export const pageQuery = graphql`
-  query {
-    site {
-      ...site
-    }
-  }
-`;
+// export const pageQuery = graphql`
+//   query {
+//     site {
+//       ...site
+//     }
+//   }
+// `;

@@ -1,10 +1,13 @@
-import React, { Fragment } from 'react';
+/** @jsx jsx */
+import { Fragment } from 'react';
 import { graphql } from 'gatsby';
 import Img from 'gatsby-image';
-import MDXRenderer from 'gatsby-mdx/mdx-renderer';
+import {jsx, css} from '@emotion/core';
+import MDXRenderer from 'gatsby-plugin-mdx/mdx-renderer';
 
 import Layout from '../components/Layout';
 import Link from '../components/Link';
+import useSiteMetadata from '../hooks/use-sitemetadata';
 
 const CategoryList = ({ list = [] }) => (
   <Fragment>
@@ -20,22 +23,23 @@ const CategoryList = ({ list = [] }) => (
 );
 
 export default function Post({
-  data: { site, mdx },
+  data: { mdx },
   pageContext: { next, prev },
 }) {
+  const siteMetadata = useSiteMetadata();
   return (
-    <Layout site={site} frontmatter={mdx.frontmatter}>
+    <Layout frontmatter={mdx.frontmatter}>
       <h1>{mdx.frontmatter.title}</h1>
       <h2>{mdx.frontmatter.date}</h2>
 
       {mdx.frontmatter.banner && (
         <Img
-          sizes={mdx.frontmatter.banner.childImageSharp.sizes}
-          alt={site.siteMetadata.keywords.join(', ')}
+          fluid={mdx.frontmatter.banner.childImageSharp.fluid}
+          alt={siteMetadata.keywords.join(', ')}
         />
       )}
 
-      <MDXRenderer>{mdx.code.body}</MDXRenderer>
+      <MDXRenderer>{mdx.body}</MDXRenderer>
 
       <div>
         <CategoryList list={mdx.frontmatter.categories} />
@@ -61,17 +65,14 @@ export default function Post({
 
 export const pageQuery = graphql`
   query($id: String!) {
-    site {
-      ...site
-    }
     mdx(fields: { id: { eq: $id } }) {
       frontmatter {
         title
         date(formatString: "MMMM DD, YYYY")
         banner {
           childImageSharp {
-            sizes(maxWidth: 900) {
-              ...GatsbyImageSharpSizes
+            fluid(maxWidth: 900) {
+              ...GatsbyImageSharpFluid
             }
           }
         }
@@ -79,9 +80,7 @@ export const pageQuery = graphql`
         categories
         keywords
       }
-      code {
-        body
-      }
+      body
     }
   }
 `;

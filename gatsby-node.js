@@ -1,6 +1,7 @@
 const path = require('path');
 
-const PAGINATION_OFFSET = 2;
+const POSTS_PER_PAGE = 50;
+const BLOG_PATH_PREFIX = '/posts';
 
 const pluckCategories = edges =>
   Object.keys(
@@ -46,8 +47,10 @@ const createPosts = (createPage, edges) => {
     const prev = i === 0 ? null : edges[i - 1].node;
     const next = i === edges.length - 1 ? null : edges[i + 1].node;
 
+    console.log(JSON.stringify(node, null, 2))
+
     createPage({
-      path: node.fields.slug,
+      path: node.fields.urlPath,
       component: path.resolve(`./src/templates/post.js`),
       context: {
         id: node.id,
@@ -61,7 +64,7 @@ const createPosts = (createPage, edges) => {
 const createBlog = (createPage, edges) => {
   const categories = pluckCategories(edges);
 
-  createPaginatedPages(createPage, edges, '/blog', { categories });
+  createPaginatedPages(createPage, edges, BLOG_PATH_PREFIX, { categories });
 };
 
 const createPaginatedPages = (
@@ -71,7 +74,7 @@ const createPaginatedPages = (
   context,
 ) => {
   const pages = edges.reduce((acc, value, index) => {
-    const pageIndex = Math.floor(index / PAGINATION_OFFSET);
+    const pageIndex = Math.floor(index / POSTS_PER_PAGE);
 
     if (!acc[pageIndex]) {
       acc[pageIndex] = [];
@@ -83,8 +86,8 @@ const createPaginatedPages = (
   }, []);
 
   pages.forEach((page, index) => {
-    const previousPagePath = `${pathPrefix}/${index + 1}`;
-    const nextPagePath =
+    const nextPagePath = `${pathPrefix}/${index + 1}`;
+    const previousPagePath =
       index === 1 ? pathPrefix : `${pathPrefix}/${index - 1}`;
 
     createPage({
@@ -93,9 +96,9 @@ const createPaginatedPages = (
       context: {
         pagination: {
           page,
-          nextPagePath: index === 0 ? null : nextPagePath,
+          nextPagePath: index === pages.length - 1 ? null : nextPagePath,
           previousPagePath:
-            index === pages.length - 1 ? null : previousPagePath,
+            index === 0 ? null : previousPagePath,
           pageCount: pages.length,
           pathPrefix,
         },
@@ -117,9 +120,7 @@ exports.createPages = ({ actions, graphql }) =>
               title
               slug
               categories
-            }
-            code {
-              scope
+              urlPath
             }
           }
         }
@@ -176,6 +177,12 @@ exports.onCreateNode = ({ node, getNode, actions }) => {
       name: 'slug',
       node,
       value: node.frontmatter.slug,
+    });
+
+    createNodeField({
+      name: 'urlPath',
+      node,
+      value: `${BLOG_PATH_PREFIX}/${node.frontmatter.slug}`.replace(/\/+/g, '/'),
     });
 
     createNodeField({

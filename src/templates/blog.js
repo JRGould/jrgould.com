@@ -36,14 +36,15 @@ const Blog = ({
 
       {posts.map(({ node: post }) => (
         <div key={post.id}>
+          {console.log({post})}
           {post.frontmatter.banner && (
             <Img
-              sizes={post.frontmatter.banner.childImageSharp.sizes}
+              fluid={post.frontmatter.banner.childImageSharp.fluid}
             />
           )}
 
           <h2>
-            <Link to={post.frontmatter.slug}>
+            <Link to={post.fields.urlPath}>
               {post.frontmatter.title}
             </Link>
           </h2>
@@ -82,21 +83,21 @@ export default Blog;
 
 export const pageQuery = graphql`
   query {
-    site {
-      ...site
-    }
     allMdx {
       edges {
         node {
           excerpt(pruneLength: 300)
           id
+          fields {
+            urlPath
+          }
           frontmatter {
             title
             date(formatString: "MMMM DD, YYYY")
             banner {
               childImageSharp {
-                sizes(maxWidth: 720) {
-                  ...GatsbyImageSharpSizes
+                fluid(maxWidth: 720) {
+                  ...GatsbyImageSharpFluid
                 }
               }
             }

@@ -1,9 +1,9 @@
 module.exports = {
   pathPrefix: '/',
   siteMetadata: {
-    siteUrl: 'https://www.robinwieruch.de/',
-    author: 'Robin Wieruch',
-    title: 'Gatsby MDX Starter Project',
+    siteUrl: 'https://www.jrgould.com/',
+    author: 'Jeff Gould',
+    title: `Jeff's website`,
     description: 'My Gatsby MDX Starter Project',
     keywords: [
       'Software Engineer',
@@ -16,13 +16,16 @@ module.exports = {
     {
       resolve: 'gatsby-source-filesystem',
       options: {
-        path: `${__dirname}/content/blog`,
-        name: 'blog',
+        path: `${__dirname}/content/posts`,
+        name: 'posts',
       },
     },
     {
-      resolve: `gatsby-mdx`,
+      resolve: `gatsby-plugin-mdx`,
       options: {
+        defaultLayouts: {
+          default: require.resolve('./src/components/Layout.js')
+        },
         extensions: ['.mdx', '.md'],
         gatsbyRemarkPlugins: [
           {
@@ -45,7 +48,7 @@ module.exports = {
     },
     'gatsby-plugin-sharp',
     'gatsby-transformer-sharp',
-    'gatsby-plugin-styled-components',
+    'gatsby-plugin-emotion',
     'gatsby-plugin-catch-links',
     'gatsby-plugin-react-helmet',
     {
