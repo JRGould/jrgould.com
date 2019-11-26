@@ -33,12 +33,10 @@ const createCategoryPages = (createPage, edges) => {
   const posts = groupByCategory(edges);
 
   Object.keys(posts).forEach(category => {
-    createPaginatedPages(
-      createPage,
-      posts[category],
-      `/categories/${category}`,
-      { categories, activeCategory: category },
-    );
+    createPaginatedPages(createPage, posts[category], `/categories/${category}`, {
+      categories,
+      activeCategory: category,
+    });
   });
 };
 
@@ -46,8 +44,6 @@ const createPosts = (createPage, edges) => {
   edges.forEach(({ node }, i) => {
     const prev = i === 0 ? null : edges[i - 1].node;
     const next = i === edges.length - 1 ? null : edges[i + 1].node;
-
-    console.log(JSON.stringify(node, null, 2))
 
     createPage({
       path: node.fields.urlPath,
@@ -67,12 +63,7 @@ const createBlog = (createPage, edges) => {
   createPaginatedPages(createPage, edges, BLOG_PATH_PREFIX, { categories });
 };
 
-const createPaginatedPages = (
-  createPage,
-  edges,
-  pathPrefix,
-  context,
-) => {
+const createPaginatedPages = (createPage, edges, pathPrefix, context) => {
   const pages = edges.reduce((acc, value, index) => {
     const pageIndex = Math.floor(index / POSTS_PER_PAGE);
 
@@ -87,18 +78,16 @@ const createPaginatedPages = (
 
   pages.forEach((page, index) => {
     const nextPagePath = `${pathPrefix}/${index + 1}`;
-    const previousPagePath =
-      index === 1 ? pathPrefix : `${pathPrefix}/${index - 1}`;
+    const previousPagePath = index === 1 ? pathPrefix : `${pathPrefix}/${index - 1}`;
 
     createPage({
       path: index > 0 ? `${pathPrefix}/${index}` : `${pathPrefix}`,
-      component: path.resolve(`src/templates/blog.js`),
+      component: path.resolve(`src/templates/posts.js`),
       context: {
         pagination: {
           page,
           nextPagePath: index === pages.length - 1 ? null : nextPagePath,
-          previousPagePath:
-            index === 0 ? null : previousPagePath,
+          previousPagePath: index === 0 ? null : previousPagePath,
           pageCount: pages.length,
           pathPrefix,
         },
@@ -153,7 +142,7 @@ exports.onCreateNode = ({ node, getNode, actions }) => {
   const { createNodeField } = actions;
 
   if (node.internal.type === `Mdx`) {
-    const parent = getNode(node.parent);
+    // const parent = getNode(node.parent);
 
     createNodeField({
       name: 'id',

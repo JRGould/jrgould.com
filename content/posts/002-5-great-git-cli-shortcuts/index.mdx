@@ -1,0 +1,90 @@
+---
+slug: "/5-great-git-cli-shortcuts"
+date: "2019-09-26T03:49:16.408Z"
+title: "5 Great Git CLI Shortcuts"
+description: "Use git on the CLI more proficiently by implementing these shortcuts"
+categories: ["git"]
+keywords: ["git", "webdev", "cli", "productivity"]
+banner: "./images/lamps.jpg"
+---
+
+I think we're all onboard with git these days - it's the best way to collaborate on code with a team or to just keep things organized, synchronized, and tidy when you're working alone. But there's still a great divide amongst git users - those who are Git CLI purists, and those of us who are happy to fire up the likes of Tower, SourceTree, Github Desktop, or one of the (probably) hundreds of other options. 
+
+CLI users will argue that it's faster and easier to use Git on the CLI but GUI users like myself are usually thinking, "I don't have that much room in my brain, I like buttons..." And, honestly, I think both are right. I've recently been working on my Git CLI skills and a great way to get better at using Git on the CLI is to create aliases for things you do often, especially when they require complex git commands - so here are a few of my favorite git aliases, straight from my `.zshrc`:
+
+### `gro`
+
+```bash
+alias gro="git reset --hard @{u}"
+```
+
+In my mind, `gro` is short for "git reset origin" but I think the whole `#{u}` thing means `upstream tracking branch` or something like that. I'll use this when I just want to make sure that I'm working with exactly the same version of this branch that's on github. Now, you can use `git pull` which will merge remote changes into your local branch or just fast-forward the branch if it can - but I like `gro` because it will just blow away any edits or even commits that I've made in my current working tree which is often useful if I've been doing some experimenting but now I'm ready to get down to business.
+
+### `gpub`
+
+```bash
+alias gpub="git push --set-upstream origin $(git_current_branch)"
+```
+
+Whenever I'm working on a new branch and am ready to push it up to github I'll just run `gpub` (shorthand for "git publish") which handles the minutia of telling my origin repo what I want the branch to be called (obviously, I just want it to be the same) and setting up the tracking so that I can just `git push` my changes in the future. If you try to `git push` when you don't have a tracking branch, git will give you an error that guides you in the right direction, but `gpub` is just so much easier.
+
+### `gst`
+
+```bash
+alias gst="git status -sb"
+alias gsb="gst"
+alias gss="gst"
+```
+
+This is an easy one, `gst` is just a better `git status` because it throws on the `-s` option which generates less verbose output (easier to read) and the `-b` option which shows the current branch and tracking branch at the top (eg `## dev...origin/dev`). I also have a few aliases for the original alias because sometimes I forget. 
+
+"Why not use `gs` as the alias for that, it's so much easier!" Is what you're probably asking yourself. Well, that's because...
+
+### `gs`
+
+```bash
+alias gs="git stash"
+```
+
+Another super simple one but I do a fair amount of stashing and stash popping. Bonus tip is that you can still add arguments and subcommands to the end of an alias so you'll often catch me running `gs push -m "WIP: converting React to Angular"` or just `gs pop`, `gs list`, etc.
+
+Honestly, I could probably swap the aliases for `gs` and `gst` since I'm sure I use `git status` more than I use `git stash` but the hard part would be getting my fingers to update their keymaps.
+
+### `gcr`
+
+```bash
+gcr(){ git checkout -t origin/"${@}" }
+```
+
+Okay, not an alias, but a function that basically works like an alias. Short for "git checkout remote", this will let you check out a remote branch locally and set the tracking up for you as well. I often use this after I've copied the branch name from a PR on github so I can run `gcr branch-to-review`. 
+
+I'm particularly lazy, so there's also a bonus alias here for mac users: 
+
+```bash
+alias gcrc="gcr $(pbpaste)"
+```
+
+This is the same as `gcr` but it will just use the contents of your clipboard for the branch name. 
+
+### Git Commit
+
+I've got quite a few more git aliases, but those are pretty standard fare and half of the time I forget to use aliases like `gp` instead of `git pull` when the git commands are more obvious to me. I think the great part of having aliases set up for the more complex or esoteric git commands that you use is that you don't have to memorize the command right away in order to be able to use it, just remember the alias and you can also use `which` to remind yourself what it actually does.
+
+```bash
+$ which gro
+>gro: aliased to git reset --hard @{u}
+```
+
+That's super helpful. Another trick I use is to actually group all of my git aliases in a .gitaliases file and import them into my `.zshrc` file - then I can also set up an alias to list out all of my git aliases, kind of like a cheat sheet!
+
+```bash
+# somewhere in .zshrc
+if [ -f $HOME/.gitaliases ]; then 
+  . $HOME/.gitaliases
+  alias gcheat="\cat $HOME/.gitaliases"
+fi
+```
+
+### Git Merge
+
+Do you have any git aliases or even non-git cli aliases, or functions that you couldn't live with out? Let me know!

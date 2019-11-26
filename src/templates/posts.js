@@ -17,36 +17,23 @@ const Categories = ({ categories }) => (
   </Fragment>
 );
 
-const Blog = ({
-  data: { site, allMdx },
-  pageContext: { pagination, categories },
-}) => {
+const Blog = ({ data: { allMdx }, pageContext: { pagination, categories } }) => {
   const { page, nextPagePath, previousPagePath } = pagination;
 
-  const posts = page.map(id =>
-    allMdx.edges.find(edge => edge.node.id === id),
-  );
+  const posts = page.map(id => allMdx.edges.find(edge => edge.node.id === id));
 
   return (
-    <Layout site={site}>
+    <Layout>
       <div>
-        All categories on the blog:{' '}
-        <Categories categories={categories} />
+        All categories on the blog: <Categories categories={categories} />
       </div>
 
       {posts.map(({ node: post }) => (
         <div key={post.id}>
-          {console.log({post})}
-          {post.frontmatter.banner && (
-            <Img
-              fluid={post.frontmatter.banner.childImageSharp.fluid}
-            />
-          )}
+          {post.frontmatter.banner && <Img fluid={post.frontmatter.banner.childImageSharp.fluid} />}
 
           <h2>
-            <Link to={post.fields.urlPath}>
-              {post.frontmatter.title}
-            </Link>
+            <Link to={post.fields.urlPath}>{post.frontmatter.title}</Link>
           </h2>
 
           <small>{post.frontmatter.date}</small>
@@ -57,24 +44,24 @@ const Blog = ({
         </div>
       ))}
 
-      <hr />
+      {(nextPagePath || previousPagePath) && (
+        <div>
+          Pagination:
+          <ul>
+            {nextPagePath && (
+              <li>
+                <Link to={nextPagePath}>Next Page</Link>
+              </li>
+            )}
 
-      <div>
-        Pagination:
-        <ul>
-          {nextPagePath && (
-            <li>
-              <Link to={nextPagePath}>Next Page</Link>
-            </li>
-          )}
-
-          {previousPagePath && (
-            <li>
-              <Link to={previousPagePath}>Previous Page</Link>
-            </li>
-          )}
-        </ul>
-      </div>
+            {previousPagePath && (
+              <li>
+                <Link to={previousPagePath}>Previous Page</Link>
+              </li>
+            )}
+          </ul>
+        </div>
+      )}
     </Layout>
   );
 };

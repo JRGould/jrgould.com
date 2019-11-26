@@ -1,0 +1,59 @@
+---
+slug: "/web-crypto-public-key-encryption"
+date: "2019-09-21T03:49:16.408Z"
+title: "Use the Web Crypto API to Generate a Public / Private Key Pair for End to End, Asymmetric Cryptography on the Web"
+description: "What it says on the tin."
+categories: ["javascript"]
+keywords: ["javascript", "crypto", "cryptography", "webdev"]
+banner: "./images/locks.jpg"
+---
+
+I'll preface this by saying that I'm not cryptography expert - just a dev who has found himself interested in the topic of cryptography in general and in asymmetric cryptography more specifically. These concepts are incredibly deep and I will barely scratch the surface but let's dip our toes in, shall we?
+
+## Public Key What Now?
+
+Public key cryptography (or asymmetric cryptography if you nasty), is a concept in cryptography that piqued my interest about a year ago because at first glance it doesn't make any sense but seems incredibly useful. It's the idea that you can create a set of cryptographic keys that are designed to work in tandem where one key can encrypt data that can then only be decrypted by the other key. 
+
+This may sound confusing but it's the crux of quite a bit of the encryption that we use on a daily basis (ssh, ssl, other acronyms starting with `s`) and for good reason: We need to be able to share secrets in an untrusted environment. 
+
+I want to get to the code, so if you need more explanation on public key cryptography, I'd recommend watching this [great video from Computerphile](https://www.youtube.com/watch?v=GSIDS_lvRv4)
+
+## Enter `window.crypto.subtle`
+
+Now that we've got the _what_ out of the way, let's get to the _how_ which involves using the [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API). 
+
+Generating the keypair is actually super simple using `crypto.subtle.generateKey` - the hard part is knowing what settings to use. I'd like to use RSA-OAEP with the recommended modulusLength of `4096` and recommended publicExponent of `65437` (which needs to be expressed as a UInt8Array) and we'll use the `SHA-256` algorithm hashing algorithm. 
+
+Now that we've got those variables figured out, we just need to plug them in to the `generateKey` method:
+
+```javascript
+    const keyPair = await crypto.subtle.generateKey(
+      {
+        name: "RSA-OAEP",
+        modulusLength: 4096,
+        publicExponent: new Uint8Array([1, 0, 1]),
+        hash: "SHA-256"
+      },
+      true,
+      ["encrypt", "decrypt"]
+    );
+```
+
+The above code will return a promise that will resolve with a [`CryptoKeyPair`](https://developer.mozilla.org/en-US/docs/Web/API/CryptoKeyPair) object that looks like `{publicKey: CryptoKey, privateKey: CryptoKey`. Easy peasy. 
+
+## What now?
+
+That's really it, but also it's kind of useless. First of all, the `CryptoKey`s contained within the `CryptoKeyPair` object will kind of only work on the current page that you're on. So, if you ask me, they're basically only good for demonstration purposes in their current state. 
+
+The next thing that we need is to be able to export them so that they're re-usable and for my money, the most convenient way to do that is to export them as JSON Web Keys since the Web Crypto API supports that out of the box:
+
+```javascript
+  const publicKey = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
+  const privateKey = await crypto.subtle.exportKey("jwk", keyPair.privateKey);
+
+```
+
+Now that we have exported our keypair as JWKs, we can keep our private key somewhere safe and–for example–publish our public key to allow encrypted messages that only we can decrypt to be sent to us via untrusted means. But we'll save that for another day. 
+
+
+

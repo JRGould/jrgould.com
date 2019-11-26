@@ -1,16 +1,22 @@
+const contentWidth = 864;
+const remarkImagesConfig = {
+  resolve: 'gatsby-remark-images',
+  options: {
+    maxWidth: contentWidth,
+    linkImagesToOriginal: false,
+    disableBgImageOnAlpha: true,
+  },
+};
+
 module.exports = {
   pathPrefix: '/',
   siteMetadata: {
     siteUrl: 'https://www.jrgould.com/',
     author: 'Jeff Gould',
-    title: `Jeff's website`,
+    title: `jeff Gould`,
     description: 'My Gatsby MDX Starter Project',
-    keywords: [
-      'Software Engineer',
-      'Web Developer',
-      'Consultant',
-      'Freelancer',
-    ],
+    contentWidth,
+    keywords: ['Software Engineer', 'Web Developer', 'Consultant', 'Freelancer'],
   },
   plugins: [
     {
@@ -24,17 +30,12 @@ module.exports = {
       resolve: `gatsby-plugin-mdx`,
       options: {
         defaultLayouts: {
-          default: require.resolve('./src/components/Layout.js')
+          default: require.resolve('./src/components/Layout.js'),
         },
         extensions: ['.mdx', '.md'],
+        plugins: [remarkImagesConfig],
         gatsbyRemarkPlugins: [
-          {
-            resolve: 'gatsby-remark-images',
-            options: {
-              maxWidth: 1035,
-              sizeByPixelDensity: true,
-            },
-          },
+          remarkImagesConfig,
           {
             resolve: `gatsby-remark-prismjs`,
             options: {

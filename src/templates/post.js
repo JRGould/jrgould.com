@@ -2,7 +2,7 @@
 import { Fragment } from 'react';
 import { graphql } from 'gatsby';
 import Img from 'gatsby-image';
-import {jsx, css} from '@emotion/core';
+import {jsx} from '@emotion/core';
 import MDXRenderer from 'gatsby-plugin-mdx/mdx-renderer';
 
 import Layout from '../components/Layout';
@@ -49,13 +49,13 @@ export default function Post({
         {prev && (
           <span>
             Previous{' '}
-            <Link to={prev.fields.slug}>{prev.fields.title}</Link>
+            <Link to={prev.fields.urlPath}>{prev.fields.title}</Link>
           </span>
         )}
         {next && (
           <span>
             Next{' '}
-            <Link to={next.fields.slug}>{next.fields.title}</Link>
+            <Link to={next.fields.urlPath}>{next.fields.title}</Link>
           </span>
         )}
       </div>

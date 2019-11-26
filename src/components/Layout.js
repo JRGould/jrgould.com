@@ -4,91 +4,95 @@ import Helmet from 'react-helmet';
 import { MDXProvider } from '@mdx-js/react';
 import { Global, css, jsx } from '@emotion/core';
 import styled from '@emotion/styled';
+import { siteMetadata } from '../../gatsby-config';
 
 import useSiteMetadata from '../hooks/use-sitemetadata';
 
 import 'prismjs/themes/prism-okaidia.css';
 
-import Link from './Link';
+import LayoutHeader from './Layout-Header';
 import { MDXLayoutComponents, MDXGlobalComponents } from './mdx';
-
-const NavLinkBase = props => {
-  const isLinkActivePage = props => {
-    console.log(props);
-    const {isPartiallyCurrent, isCurrent, href} = props;
-    if (href === "/") {
-      return isCurrent ? {"aria-current": true} : null;
-    }
-    return isPartiallyCurrent ? {"aria-current": true} : null
-  }
-
-  return <Link getProps={isLinkActivePage} {...props} />
-}
-
-const NavLink = styled(NavLinkBase)`
-    display: block;
-    border-left: 20px solid red!important;
-`
+import runCanvas from './canvas-bg';
 
 const globalStyle = css`
-  @import url("https://fonts.googleapis.com/css?family=Raleway:300,400");
+  @import url('https://fonts.googleapis.com/css?family=Raleway:300,400');
 
-  html, body {
-    --primary-color: rgb(255,213,86);
-    --primary-color-light: rgba(255,200,30,.50);
-    --primary-color-lighter: rgba(255,200,30,.20);
+  :root {
+    --primary-color: rgb(255, 213, 86);
+    --primary-color-light: rgba(255, 200, 30, 0.5);
+    --primary-color-lighter: rgba(255, 200, 30, 0.2);
 
-    --secondary-color: rgba(30, 255, 155, 0.75);
-    --secondary-color-light: rgba(30, 255, 155, 0.50);
-    --secondary-color-lighter: rgba(30, 255, 155, 0.20);
+    --text-color: #555555;
+    --code-bgcolor: #373f46;
+    --code-bgcolor-light: #eee;
 
-    --content-width: 54rem;
-    --site-border-size: 16px;
+    --content-width: ${siteMetadata.contentWidth}px;
+    --site-border-size: 1rem;
+    --content-inset: 2rem;
 
+    --standard-transition-duration: 0.3s;
+    --standard-transition-easing: ease-out;
+  }
+
+  html,
+  body {
     margin: 0;
     padding: 0;
-    background: #fff;
+    background: #transparent;
     min-height: 100vh;
     margin: 0;
 
     font-family: Raleway, Helvetica Neue, sans-serif;
-    &, *{
+    &,
+    * {
       position: relative;
       box-sizing: border-box;
     }
   }
 
-  picture{
+  picture {
     position: static;
   }
 
-  ${() => {
-    /* Override PrismJS Defaults */ return null;
-  }}
+  /* Override PrismJS Defaults */
+  div[data-language] {
+    margin-left: calc(-1 * var(--content-inset));
+    margin-right: calc(-1 * var(--content-inset));
 
-  pre {
-    background-color: #2f1e2e !important;
-    border-radius: 4px;
-    font-size: 14px;
+    pre {
+      border-radius: 0px;
+      font-size: 13px;
+      background-color: var(--code-bgcolor);
+    }
+
+    .gatsby-highlight-code-line {
+      background-color: #444;
+      display: block;
+      margin-right: -1em;
+      margin-left: -1em;
+      padding-right: 1em;
+      padding-left: 1em;
+    }
   }
-
-  .gatsby-highlight-code-line {
-    background-color: #4f424c;
-    display: block;
-    margin-right: -1em;
-    margin-left: -1em;
-    padding-right: 1em;
-    padding-left: 1em;
+  /* PrismJS inline code override */
+  :not(pre) > code[class*='language-'] {
+    background-color: var(--code-bgcolor-light);
+    color: var(--text-color);
+    font-size: 0.8em;
+    padding: 0.1em 0.4em 0.2em;
+    border-radius: 0;
+    text-shadow: none;
   }
-
 
   body {
     border-left: var(--site-border-size) solid var(--primary-color);
     border-right: var(--site-border-size) solid var(--primary-color);
     padding: 0;
   }
-  body:before, body:after {
-    content: "";
+
+  body:before,
+  body:after {
+    content: '';
     position: fixed;
     background-color: var(--primary-color);
     left: var(--site-border-size);
@@ -96,15 +100,16 @@ const globalStyle = css`
     height: var(--site-border-size);
     z-index: 9999;
   }
+
   body:before {
-      top: 0;
+    top: 0;
   }
+
   body:after {
-      bottom: 0;
+    bottom: 0;
   }
 
-
-  #___gatsby{
+  #___gatsby {
     display: flex;
     min-height: 99vh;
     flex-direction: column;
@@ -115,89 +120,37 @@ const globalStyle = css`
     margin: 0 auto;
     padding-bottom: 3rem;
   }
-
-  a{
+  a {
     background-color: var(--primary-color-lighter);
     color: #333;
     text-decoration: none;
-    transition: background-color .3s ease-out;
-    &:hover{
-    background-color: var(--primary-color-light);
-    }
-  }
-
-`;
-
-const SiteHeader = styled.header`
-  padding: var(--site-border-size) 1rem 0 1rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-
-  position: sticky;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 500;
-
-  h1 {
-    margin: 0;
-    a{
-      display: inline-block;
-      padding: 0 .5rem;
-      background-color: var(--primary-color);
-      --triangle-size: 1.15em;
-      &:before{
-        content: '';
-        border-left: var(--triangle-size) solid transparent;
-        border-top: var(--triangle-size) solid var(--primary-color);
-        position: absolute;
-        right: 100%;
-        bottom: 0;
-      }
-      &:after{
-        content: '';
-        border-right: var(--triangle-size) solid transparent;
-        border-top: var(--triangle-size) solid var(--primary-color);
-        position: absolute;
-        left: 100%;
-        bottom: 0;
-      }
-    }
-  }
-
-  ul {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-    
-    li {
-      display: inline-block;
-      margin-left: 1rem;
-      font-size: 1.3rem;
+    transition: background-color var(--standard-transition-duration)
+      var(--standard-transition-easing);
+    &:hover {
+      background-color: var(--primary-color-light);
     }
   }
 `;
 
-const NAVIGATION = [
-  { to: '/', label: 'Home' },
-  { to: '/blog', label: 'Blog' },
-];
+const ContentWrapper = styled.div`
+  padding: var(--content-inset);
+`;
 
 export default ({ frontmatter = {}, children }) => {
-  const {
-    title,
-    description: siteDescription,
-    keywords: siteKeywords,
-  } = useSiteMetadata();
+  const { title, description: siteDescription, keywords: siteKeywords } = useSiteMetadata();
 
-  const {
-    keywords: frontmatterKeywords,
-    description: frontmatterDescription,
-  } = frontmatter;
+  const { keywords: frontmatterKeywords, description: frontmatterDescription } = frontmatter;
 
   const keywords = (frontmatterKeywords || siteKeywords).join(', ');
   const description = frontmatterDescription || siteDescription;
+
+  const canvasRef = React.useRef();
+  React.useEffect(() => {
+    const timeout = runCanvas(canvasRef.current);
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [canvasRef]);
 
   return (
     <React.Fragment>
@@ -220,23 +173,33 @@ export default ({ frontmatter = {}, children }) => {
         }}
       >
         <div className="site-wrapper">
-          <SiteHeader>
-            <h1><Link to="/">Jeff Gould</Link></h1>
-            <ul css={css`
-              list-style: none;
-            `}>
-              {NAVIGATION.map(navigation => (
-                <li key={navigation.label}>
-                  <NavLink to={navigation.to}>{navigation.label}</NavLink>
-                </li>
-              ))}
-            </ul>
-          </SiteHeader>
-
-          {children}
+          <LayoutHeader />
+          <ContentWrapper>{children}</ContentWrapper>
+        </div>
+        <div
+          css={css`
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+          `}
+        >
+          <canvas
+            ref={canvasRef}
+            css={css`
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              width: 100vmax;
+              height: 100vmax;
+            `}
+          />
         </div>
       </MDXProvider>
     </React.Fragment>
   );
 };
-
