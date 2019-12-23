@@ -13,7 +13,7 @@ module.exports = {
   siteMetadata: {
     siteUrl: 'https://www.jrgould.com/',
     author: 'Jeff Gould',
-    title: `jeff Gould`,
+    title: `Jeff Gould | Full Stack JavaScript`,
     description: 'My Gatsby MDX Starter Project',
     contentWidth,
     keywords: ['Software Engineer', 'Web Developer', 'Consultant', 'Freelancer'],

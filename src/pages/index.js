@@ -2,6 +2,7 @@
 import { css, jsx } from '@emotion/core';
 import Link from '../components/Link';
 import * as image from '../../assets/programmer.svg';
+import { graphql } from 'gatsby';
 
 import Layout from '../components/Layout';
 
