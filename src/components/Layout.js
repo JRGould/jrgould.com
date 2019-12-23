@@ -27,7 +27,7 @@ const globalStyle = css`
     --code-bgcolor-light: #eee;
 
     --content-width: ${siteMetadata.contentWidth}px;
-    --site-border-size: 1rem;
+    --site-border-size: 0rem;
     --content-inset: 2rem;
 
     --standard-transition-duration: 0.3s;
@@ -38,7 +38,7 @@ const globalStyle = css`
   body {
     margin: 0;
     padding: 0;
-    background: #transparent;
+    background: transparent;
     min-height: 100vh;
     margin: 0;
 
@@ -134,6 +134,7 @@ const globalStyle = css`
 
 const ContentWrapper = styled.div`
   padding: var(--content-inset);
+  padding-top: 0;
 `;
 
 export default ({ frontmatter = {}, children }) => {

@@ -5,6 +5,7 @@ import YouTube from 'react-youtube';
 import Title from './Title';
 import Subtitle from './Subtitle';
 import Paragraph from './Paragraph';
+import Example from '../Example-Wrapper.jsx';
 
 import Link from '../Link';
 
@@ -17,4 +18,5 @@ export const MDXLayoutComponents = {
 export const MDXGlobalComponents = {
   Link,
   YouTube,
+  Example,
 };

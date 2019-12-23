@@ -11,24 +11,27 @@ const NAVIGATION = [
 
 const SiteHeader = styled.header`
   padding: var(--site-border-size) 1rem 0 1rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
+  /* display: flex; */
+  /* justify-content: space-between; */
+  /* align-items: baseline; */
 
-  position: sticky;
-  top: 0;
+  /* position: sticky; */
+  /* top: 0;
   left: 0;
   right: 0;
-  z-index: 500;
+  z-index: 500; */
 
   h1 {
     margin: 0;
+    text-align: center;
+    /* background-color: rgba(255, 255, 255, 0.9); */
+    padding: 1rem 0 1.5rem;
     a {
-      display: inline-block;
-      padding: 0 0.5rem;
-      background-color: var(--primary-color);
+      /* display: inline-block; */
+      /* background-color: var(--primary-color); */
+      background-color: transparent;
       --triangle-size: 1.15em;
-      &:before {
+      /* &:before {
         content: '';
         border-left: var(--triangle-size) solid transparent;
         border-top: var(--triangle-size) solid var(--primary-color);
@@ -43,7 +46,7 @@ const SiteHeader = styled.header`
         position: absolute;
         left: 100%;
         bottom: 0;
-      }
+      } */
     }
   }
 
@@ -108,17 +111,19 @@ export default () => (
     <h1>
       <Link to="/">Jeff Gould</Link>
     </h1>
-    <ul
-      css={css`
-        list-style: none;
-      `}
-    >
-      {false &&
-        NAVIGATION.map(navigation => (
-          <li key={navigation.label}>
-            <NavLink to={navigation.to}>{navigation.label}</NavLink>
-          </li>
-        ))}
-    </ul>
+    {NAVIGATION.length && (
+      <ul
+        css={css`
+          list-style: none;
+        `}
+      >
+        {false &&
+          NAVIGATION.map(navigation => (
+            <li key={navigation.label}>
+              <NavLink to={navigation.to}>{navigation.label}</NavLink>
+            </li>
+          ))}
+      </ul>
+    )}
   </SiteHeader>
 );

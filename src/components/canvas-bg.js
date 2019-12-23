@@ -13,8 +13,8 @@ export default function runCanvas(canvas) {
       calls: 0,
     };
 
-    const lineWidth = 2 + Math.random() * 50;
-    const strokeStyle = '#FCFCFC';
+    const lineWidth = 40 + Math.random() * 10;
+    let strokeStyle = 'rgb(255,251,250)';
     context.fillStyle = '#FFF';
     context.fillRect(0, 0, size, size);
 
