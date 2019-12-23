@@ -100,7 +100,6 @@ And from that we can compose a `rollHash` function that will remove the first ch
 
 ```js
 function rollHash(originalHash, firstChar, nextChar, strLen) {
-  console.log({ originalHash, firstChar, nextChar, strLen });
   const shiftedHash = shiftHash(originalHash, firstChar);
   return pushHash(shiftedHash, strLen, nextChar);
 }
@@ -119,7 +118,6 @@ function grepHash(haystack, needle) {
   let currentHash = hash(haystack.substr(0, nLength));
   for (let i = 0; i < haystack.length - (nLength - 1); i++) {
     if (needleHash === currentHash) matches.push(i);
-    console.log(nLength);
     currentHash = rollHash(
       currentHash,
       haystack[i], // first character in current search
@@ -134,7 +132,7 @@ function grepHash(haystack, needle) {
 
 Tne code here is definitely more complicated, but this is often the case with optimized solutions - we're doing more work up front to prevent the computer from having to do it at runtime. Here it is in a [CodeSandbox](https://codesandbox.io/s/funny-driscoll-huj8d?fontsize=14&hidenavigation=1&theme=dark) for you to play around with.
 
-<Example name="grepHash() on codeSandbox">
+<Example name="grepHash() on CodeSandbox">
   <iframe
      src="https://codesandbox.io/embed/funny-driscoll-huj8d?fontsize=14&hidenavigation=1&theme=dark"
      style="width:100%; height:200px; border:0; border-radius: 4px; overflow:hidden;"

@@ -12,7 +12,6 @@ import 'prismjs/themes/prism-okaidia.css';
 
 import LayoutHeader from './Layout-Header';
 import { MDXLayoutComponents, MDXGlobalComponents } from './mdx';
-import runCanvas from './canvas-bg';
 
 const globalStyle = css`
   @import url('https://fonts.googleapis.com/css?family=Raleway:300,400');
@@ -145,14 +144,6 @@ export default ({ frontmatter = {}, children }) => {
   const keywords = (frontmatterKeywords || siteKeywords).join(', ');
   const description = frontmatterDescription || siteDescription;
 
-  const canvasRef = React.useRef();
-  React.useEffect(() => {
-    const timeout = runCanvas(canvasRef.current);
-    return () => {
-      clearTimeout(timeout);
-    };
-  }, [canvasRef]);
-
   return (
     <React.Fragment>
       <Helmet
@@ -176,29 +167,6 @@ export default ({ frontmatter = {}, children }) => {
         <div className="site-wrapper">
           <LayoutHeader />
           <ContentWrapper>{children}</ContentWrapper>
-        </div>
-        <div
-          css={css`
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            overflow: hidden;
-          `}
-        >
-          <canvas
-            ref={canvasRef}
-            css={css`
-              position: absolute;
-              top: 50%;
-              left: 50%;
-              transform: translate(-50%, -50%);
-              width: 100vmax;
-              height: 100vmax;
-            `}
-          />
         </div>
       </MDXProvider>
     </React.Fragment>
