@@ -1,0 +1,149 @@
+---
+slug: "/rabin-karp-rolling-hash-string-search-algorithm"
+date: "2019-12-17T03:49:16.408Z"
+title: "How to write a rolling hash string search algorithm in JavaScript"
+description: "Use git on the CLI more proficiently by implementing these shortcuts"
+categories: ["javascript"]
+keywords: ["javascript", "webdev", "interview questions", "algorithms"]
+banner: "./images/nasa-Q1p7bh3SHj8-unsplash.jpg"
+---
+
+import Grep from './components/Grep'
+
+Some time ago I watched an interview on [interviewing.io](interviewing.io) where the task that the interviewer posed to the interviewee was to create a function called `grep()` that should accept a string, `haystack`, and a string, `needle` and return an array of indexes where `needle` exists in `haystack`.
+
+## The naive approach
+
+The naive approach is pretty simple in javascript, just loop through each letter in the `haystack`, grab a slice starting at the current letter that is the length of the needle, and check to see if that slice is equal to the needle.
+
+Here's what that might look like:
+
+```js 
+// Naive approach
+function grepNaive(haystack, needle) {
+  const matches = [];
+  for(let i = 0; i < haystack.length - (needle.length-1); i++){
+    const substr = haystack.slice(i, i + needle.length);
+    if( substr === needle ) matches.push(i);
+  } 
+  return matches; 
+}
+```
+
+And here it is in action: 
+
+<Grep funcName="grepNaive" func={(haystack, needle) => {
+  const matches = [];
+  for(let i = 0; i < haystack.length - (needle.length-1); i++){
+    const substr = haystack.slice(i, i + needle.length);
+    if( substr === needle ) matches.push(i);
+  } 
+  return matches; 
+}} />
+
+This works great but it's not super efficient. The loop only runs once for each possible match, but the string comparison is arguably a _heavy_ operation that further requires that each letter in the slice be compared to each letter in the `needle`. JavaScript hides this bit of complexity from us by allowing us to check string equality, but under the hood each individual letter still needs to  be evaluated and since we're making this comparison once for each letter in the `haystack`, most letters actually get compared multiple times. 
+
+## A more efficient solution: rolling-hash search
+
+If you were to get asked this question in an interview, this is the point where the interview would say somethign a long the lines of "this is great, but is there a more efficient solution?" Any maybe you've memorized [Rabin-Karp](https://www.geeksforgeeks.org/rabin-karp-algorithm-for-pattern-searching/) because you're a 10x-rockstar-ninja-guru. Awesome. If you're like me and you have no idea what fish have to do with pattern matching algorithms - then you've come to the right place!
+
+First thing's first: What even is a rolling hash? Well, basically it's the idea that you can find hash of a substring within a string and then shift the first letter out of that hash and push another letter onto the end of the hash to find the hash of the substring next to the original without recalculating the entire hash. To do that we need to come up with a way to hash strings that will allow us to do this shift and push operation while still producing hashes that don't produce too many collisions (eg `hash('ba') ≠ hash('ab')`).
+
+To do that, let's start simple, and hash just a single character with a `hash1()` function. We can do this by finding the character code of a character and just multiplying that by a large number - multiplying by a large number will help us to avoid colissions when we're hashes of whole strings.
+
+```js
+function hash1(str) {
+  return str.charCodeAt(0) * 256;
+}
+```
+
+We could use this function to create hashes of stings by adding the hashes together, but right now this will still be very prone to collision because `hash1('a') + hash1('b') === hash1('b') + hash1('a')` - we need to add a way to create hashes that respect the order of the characters in a string, and we can do that by first adding a `vector` argument to our `hash1()` function.
+
+```js
+function hash1(char, vector = 0) {
+  return char.charCodeAt(0) * 256 ** vector;
+}
+```
+
+All that's changed here is that we're accepting that vector argument and using it as an exponent on our hash and giving it a default value of 0 - so now the `hash1('d')` will actually just be equal to `'d'.charCodeAt(0)` which is `100` but we can specify that vector to signify different positions of the letter, so the `hash1` of the letter `d` within the string `mad` would be `hash1('d', 2)` which would be `6553600`.
+
+Now we just need to create a string hashing function that will use our `hash1()` function to create hashes of whole strings. We can do that by just passing each letter to `hash1()`, using its position in the string as the `vector` and adding all of those values up. I'll do that by splitting the string up into an array of characters and then utilising JavaScript's `Array.map` and `Array.reduce` methods:
+
+```js
+function hash(str) {
+  return str
+    .split('') // transform the string into an array of characters
+    .map(hash1) // hash each character, using its index in the array as vector
+    .reduce(add, 0) // add all of the values up (assume add function defined as `(a,b) => a+b`)
+}
+```
+
+What's nice about this hash method is that while there is a low chance of hash collisions, the math is pretty straightforward which allows us to modify the hash without having to jump through too many hoops. For example, if you find the hash for a string like `foo` (`7303014`) and want to find the hash for just `oo`, all you have to do is subtract the hash for `f` which is just its character code `7303014 - 102 = 7302912` and then shift the exponents on the rest of the hashed characters down by one which can be done by dividing the the remaining hash number by 256 `7302912/256 = 28527`.
+
+Why divide by 256? Because `(a*256^n)/256` is equal to `(a*256^(n-1))`. So assuming the character code for "f" is 102 and "o" is 111, we can find the original hash using the following equation `hash(foo) = (102*256^0) + (111*256^1) + (111*256^2)` so when we subtract `102` that equation looks like `hash(_oo) = (111*256^1) + (111*256^2)` and then dividing by 256 gets us `hash(oo) = (111*256^0)+(111*256^1)`. Let's create a function to express that: 
+
+```js
+function shiftHash(originalHash, firstChar) {
+  return (originalHash - hash1(firstChar)) / 256;
+}
+```
+
+Next, we can create a function to pop a character on to the existing hash. To add a character onto an existing hash, we just need to add the `hash1()` of the character that we'd like to add, with the vector appropriate for the position that we'll add it. So if we have the hash for `oo` (`28527`) and we'd like to find the hash for `oof`, we just need to find `hash1('f', 2) //6684672` because we'll be adding 'f' as the third character in the string with indexes staritng from `0` abd add that to the existing hash `28527 + 6684672 = 6713199`. Here's how that would work as a function
+
+```js
+function pushHash(originalHash, strLen, nextChar) {
+  return originalHash + hash1(nextChar, strLen-1);
+}
+```
+
+And from that we can compose a `rollHash` function that will remove the first character from an existing hash and add a new character onto the end:
+
+```js
+function rollHash(originalHash, firstChar, nextChar, strLen) {
+  console.log({ originalHash, firstChar, nextChar, strLen });
+  const shiftedHash = shiftHash(originalHash, firstChar);
+  return pushHash(shiftedHash, strLen, nextChar);
+}
+```
+
+So now we can find the hash of a string `hash('foo') //7303014` and then easily find the hash of `oof` by using `rollHash(7303014, 'foo', 'f'); //6713199`.
+
+To put it all together, we can now build our `grep` function by looping through our `haystack` to find occurances of our `needle`
+
+```js 
+// Rolling Hash Approach
+function grepHash(haystack, needle) {
+  const matches = [];
+  const needleHash = hash(needle);
+  const nLength = needle.length;
+  let currentHash = hash(haystack.substr(0, nLength));
+  for (let i = 0; i < haystack.length - (nLength - 1); i++) {
+    if (needleHash === currentHash) matches.push(i);
+    console.log(nLength);
+    currentHash = rollHash(
+      currentHash,
+      haystack[i], // first character in current search
+      haystack.substr(i + nLength, 1), // next letter in haystack
+      nLength
+    );
+  }
+
+  return matches;
+}
+```
+
+Tne code here is definitely more complicated, but this is often the case with optimized solutions - we're doing more work up front to prevent the computer from having to do it at runtime. Here it is in a [CodeSandbox](https://codesandbox.io/s/funny-driscoll-huj8d?fontsize=14&hidenavigation=1&theme=dark) for you to play around with.
+
+<Example name="grepHash() on codeSandbox">
+  <iframe
+     src="https://codesandbox.io/embed/funny-driscoll-huj8d?fontsize=14&hidenavigation=1&theme=dark"
+     style="width:100%; height:200px; border:0; border-radius: 4px; overflow:hidden;"
+     title="Rolling Hash String Search Algorithm"
+     allow="geolocation; microphone; camera; midi; vr; accelerometer; gyroscope; payment; ambient-light-sensor; encrypted-media; usb"
+     sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"
+   ></iframe>
+</Example>
+
+## Conclusion
+
+To be completely honest, modern hardware and languages would probably still support the naive solution just fine, even at scale. So this may only be something that you use in the context of interviewing or if you enjoy trying to level up on platforms like HackerRank. As a self-taught developer, I've come to enjoy learning about algorithms because even if I don't end up using them in my day to day, it helps me to expand the way that I think about code and problem solving.
