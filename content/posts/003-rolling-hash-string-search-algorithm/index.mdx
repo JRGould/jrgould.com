@@ -10,7 +10,7 @@ banner: "./images/nasa-Q1p7bh3SHj8-unsplash.jpg"
 
 import Grep from './components/Grep'
 
-Some time ago I watched an interview on [interviewing.io](interviewing.io) where the task that the interviewer posed to the interviewee was to create a function called `grep()` that should accept a string, `haystack`, and a string, `needle` and return an array of indexes where `needle` exists in `haystack`.
+Some time ago I watched an interview on [interviewing.io](interviewing.io) where the task that the interviewer posed to the interviewee was to create a function called `grep()` that should accept two strings, `haystack` and `needle`, and return an array of indexes where `needle` exists in `haystack`.
 
 ## The naive approach
 
@@ -45,11 +45,11 @@ This works great but it's not super efficient. The loop only runs once for each 
 
 ## A more efficient solution: rolling-hash search
 
-If you were to get asked this question in an interview, this is the point where the interview would say somethign a long the lines of "this is great, but is there a more efficient solution?" Any maybe you've memorized [Rabin-Karp](https://www.geeksforgeeks.org/rabin-karp-algorithm-for-pattern-searching/) because you're a 10x-rockstar-ninja-guru. Awesome. If you're like me and you have no idea what fish have to do with pattern matching algorithms - then you've come to the right place!
+If you were to get asked this question in an interview, this is the point where the interviewer would say something a long the lines of "this is great, but is there a more efficient solution?" Any maybe you've memorized [Rabin-Karp](https://www.geeksforgeeks.org/rabin-karp-algorithm-for-pattern-searching/) because you're a 10x-rockstar-ninja-guru. Awesome. If you're like me and you have no idea what fish have to do with pattern matching algorithms - then you've come to the right place!
 
 First thing's first: What even is a rolling hash? Well, basically it's the idea that you can find hash of a substring within a string and then shift the first letter out of that hash and push another letter onto the end of the hash to find the hash of the substring next to the original without recalculating the entire hash. To do that we need to come up with a way to hash strings that will allow us to do this shift and push operation while still producing hashes that don't produce too many collisions (eg `hash('ba') ≠ hash('ab')`).
 
-To do that, let's start simple, and hash just a single character with a `hash1()` function. We can do this by finding the character code of a character and just multiplying that by a large number - multiplying by a large number will help us to avoid colissions when we're hashes of whole strings.
+To do that, let's start simple and hash just a single character with a `hash1()` function. We can do this by finding the character code of a character and just multiplying that by a large number - multiplying by a large number will help us to avoid hash collisions when we're finding hashes of whole strings.
 
 ```js
 function hash1(str) {
@@ -65,9 +65,9 @@ function hash1(char, vector = 0) {
 }
 ```
 
-All that's changed here is that we're accepting that vector argument and using it as an exponent on our hash and giving it a default value of 0 - so now the `hash1('d')` will actually just be equal to `'d'.charCodeAt(0)` which is `100` but we can specify that vector to signify different positions of the letter, so the `hash1` of the letter `d` within the string `mad` would be `hash1('d', 2)` which would be `6553600`.
+All that's changed here is that we're accepting that `vector` argument and using it as an exponent on our hash - so now, since `vector` defaults to `0`, `hash1('d')` will actually return the same value as `'d'.charCodeAt(0)`  which is `100` but we can specify a vector to signify different positions of the letter, so the `hash1` of the letter `d` within the string `mad` would be `hash1('d', 2)` which would be `6553600`.
 
-Now we just need to create a string hashing function that will use our `hash1()` function to create hashes of whole strings. We can do that by just passing each letter to `hash1()`, using its position in the string as the `vector` and adding all of those values up. I'll do that by splitting the string up into an array of characters and then utilising JavaScript's `Array.map` and `Array.reduce` methods:
+Now we just need to create a string hashing function that will use our `hash1()` function to create hashes of whole strings. We can do that by just passing each letter to `hash1()`, using its position in the string as the `vector` and adding all of those values up. I'll do that by splitting the string up into an array of characters and then utilize JavaScript's `Array.map` and `Array.reduce` methods to find the hash value and then get the sum of all hash values in the string:
 
 ```js
 function hash(str) {
@@ -88,11 +88,11 @@ function shiftHash(originalHash, firstChar) {
 }
 ```
 
-Next, we can create a function to pop a character on to the existing hash. To add a character onto an existing hash, we just need to add the `hash1()` of the character that we'd like to add, with the vector appropriate for the position that we'll add it. So if we have the hash for `oo` (`28527`) and we'd like to find the hash for `oof`, we just need to find `hash1('f', 2) //6684672` because we'll be adding 'f' as the third character in the string with indexes staritng from `0` abd add that to the existing hash `28527 + 6684672 = 6713199`. Here's how that would work as a function
+Next, we can create a function to pop a character on to the end of the existing hash. To add a character onto an existing hash, we just need to add the `hash1()` of the character that we'd like to add, with the vector appropriate for the position that we'll add it. So if we have the hash for `oo` (`28527`) and we'd like to find the hash for `oof`, we just need to find `hash1('f', 2) //6684672` and add that to the existing hash `28527 + 6684672 = 6713199`. Here's how that would work as a function
 
 ```js
 function pushHash(originalHash, strLen, nextChar) {
-  return originalHash + hash1(nextChar, strLen-1);
+  return originalHash + hash1(nextChar, strLen-1); // Subtract 1 from strLen because indexes start at 0
 }
 ```
 
@@ -105,24 +105,24 @@ function rollHash(originalHash, firstChar, nextChar, strLen) {
 }
 ```
 
-So now we can find the hash of a string `hash('foo') //7303014` and then easily find the hash of `oof` by using `rollHash(7303014, 'foo', 'f'); //6713199`.
+Now we can find the hash of a string `hash('foo') //7303014` and then easily find the hash of `oof` by using `rollHash(7303014, 'f', 'f', 3); //6713199`.
 
-To put it all together, we can now build our `grep` function by looping through our `haystack` to find occurances of our `needle`
+To put it all together, we can now build our `grep` function by looping through our `haystack` to find occurrences of our `needle`
 
 ```js 
 // Rolling Hash Approach
 function grepHash(haystack, needle) {
-  const matches = [];
+  const matches = []; // This will store all indexes where a match occurs
   const needleHash = hash(needle);
-  const nLength = needle.length;
-  let currentHash = hash(haystack.substr(0, nLength));
-  for (let i = 0; i < haystack.length - (nLength - 1); i++) {
-    if (needleHash === currentHash) matches.push(i);
+  const needleLength = needle.length;
+  let currentHash = hash(haystack.substr(0, needleLength)); 
+  for (let i = 0; i < haystack.length - (needleLength - 1); i++) {
+    if (needleHash === currentHash) matches.push(i); // If hashes match, push the current index into matches
     currentHash = rollHash(
       currentHash,
       haystack[i], // first character in current search
-      haystack.substr(i + nLength, 1), // next letter in haystack
-      nLength
+      haystack.substr(i + needleLength, 1), // next letter in haystack
+      needleLength
     );
   }
 
